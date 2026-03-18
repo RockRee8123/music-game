@@ -1,81 +1,112 @@
+<!DOCTYPE html>
 <html lang="ja">
-<div id="game">
-  <div id="score">Score: 0</div>
-  <div id="gameover">GAME OVER<br>クリックで再スタート</div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ガチャゲーム</title>
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .container {
+    text-align: center;
+  }
+
+  button {
+    padding: 15px 30px;
+    font-size: 18px;
+    border: none;
+    border-radius: 10px;
+    background: gold;
+    cursor: pointer;
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  #result {
+    margin-top: 20px;
+    font-size: 24px;
+  }
+
+  .card {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 15px;
+    display: inline-block;
+    min-width: 200px;
+  }
+
+  .N { background: #aaa; }
+  .R { background: #4caf50; }
+  .SR { background: #2196f3; }
+  .SSR { background: #9c27b0; }
+
+  .shine {
+    animation: shine 1s infinite alternate;
+  }
+
+  @keyframes shine {
+    from { box-shadow: 0 0 10px white; }
+    to { box-shadow: 0 0 30px gold; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🎰 ガチャゲーム</h1>
+  <button onclick="drawGacha()">ガチャを引く！</button>
+  <div id="result"></div>
+  <div id="card"></div>
 </div>
 
 <script>
-const game = document.getElementById("game");
-const scoreDisplay = document.getElementById("score");
-const gameoverText = document.getElementById("gameover");
+const characters = [
+  { name: "スライム", rarity: "N", rate: 60 },
+  { name: "戦士", rarity: "R", rate: 25 },
+  { name: "魔法使い", rarity: "SR", rate: 10 },
+  { name: "ドラゴン", rarity: "SSR", rate: 5 }
+];
 
-let tiles = [];
-let score = 0;
-let speed = 2;
-let gameOver = false;
+function drawGacha() {
+  let rand = Math.random() * 100;
+  let sum = 0;
+  let selected;
 
-function createTile() {
-  const tile = document.createElement("div");
-  tile.classList.add("tile");
-  tile.style.left = (Math.floor(Math.random() * 4) * 25) + "%";
-  tile.style.top = "-100px";
-  game.appendChild(tile);
-  tiles.push(tile);
-}
-
-function update() {
-  if (gameOver) return;
-
-  tiles.forEach((tile, index) => {
-    let top = parseFloat(tile.style.top);
-    tile.style.top = top + speed + "px";
-
-    if (top > 500) {
-      endGame();
+  for (let c of characters) {
+    sum += c.rate;
+    if (rand <= sum) {
+      selected = c;
+      break;
     }
-  });
-
-  if (Math.random() < 0.03) {
-    createTile();
   }
 
-  requestAnimationFrame(update);
+  showResult(selected);
 }
 
-function endGame() {
-  gameOver = true;
-  gameoverText.style.display = "block";
-}
+function showResult(char) {
+  const result = document.getElementById("result");
+  const card = document.getElementById("card");
 
-game.addEventListener("click", (e) => {
-  if (gameOver) {
-    restart();
-    return;
+  result.textContent = "結果！";
+
+  card.className = "card " + char.rarity;
+  card.innerHTML = `\n    <h2>${char.rarity}</h2>\n    <p>${char.name}</p>\n  `;
+
+  if (char.rarity === "SSR") {
+    card.classList.add("shine");
   }
-
-  if (e.target.classList.contains("tile")) {
-    e.target.remove();
-    tiles = tiles.filter(t => t !== e.target);
-    score++;
-    speed += 0.1;
-    scoreDisplay.textContent = "Score: " + score;
-  } else {
-    endGame();
-  }
-});
-
-function restart() {
-  tiles.forEach(tile => tile.remove());
-  tiles = [];
-  score = 0;
-  speed = 2;
-  gameOver = false;
-  scoreDisplay.textContent = "Score: 0";
-  gameoverText.style.display = "none";
-  update();
 }
-
-update();
 </script>
 
 </body>
