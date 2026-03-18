@@ -1,0 +1,82 @@
+<html lang="ja">
+<div id="game">
+  <div id="score">Score: 0</div>
+  <div id="gameover">GAME OVER<br>クリックで再スタート</div>
+</div>
+
+<script>
+const game = document.getElementById("game");
+const scoreDisplay = document.getElementById("score");
+const gameoverText = document.getElementById("gameover");
+
+let tiles = [];
+let score = 0;
+let speed = 2;
+let gameOver = false;
+
+function createTile() {
+  const tile = document.createElement("div");
+  tile.classList.add("tile");
+  tile.style.left = (Math.floor(Math.random() * 4) * 25) + "%";
+  tile.style.top = "-100px";
+  game.appendChild(tile);
+  tiles.push(tile);
+}
+
+function update() {
+  if (gameOver) return;
+
+  tiles.forEach((tile, index) => {
+    let top = parseFloat(tile.style.top);
+    tile.style.top = top + speed + "px";
+
+    if (top > 500) {
+      endGame();
+    }
+  });
+
+  if (Math.random() < 0.03) {
+    createTile();
+  }
+
+  requestAnimationFrame(update);
+}
+
+function endGame() {
+  gameOver = true;
+  gameoverText.style.display = "block";
+}
+
+game.addEventListener("click", (e) => {
+  if (gameOver) {
+    restart();
+    return;
+  }
+
+  if (e.target.classList.contains("tile")) {
+    e.target.remove();
+    tiles = tiles.filter(t => t !== e.target);
+    score++;
+    speed += 0.1;
+    scoreDisplay.textContent = "Score: " + score;
+  } else {
+    endGame();
+  }
+});
+
+function restart() {
+  tiles.forEach(tile => tile.remove());
+  tiles = [];
+  score = 0;
+  speed = 2;
+  gameOver = false;
+  scoreDisplay.textContent = "Score: 0";
+  gameoverText.style.display = "none";
+  update();
+}
+
+update();
+</script>
+
+</body>
+</html>
